@@ -1,0 +1,48 @@
+<html>
+
+<head>
+<title>Learning WebGL &mdash; lesson 1</title>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
+<script id="fshader" type="x-shader/x-fragment">
+	precision mediump float;
+
+	varying vec4 varColor;
+
+	void main(void) {
+		gl_FragColor = varColor;
+	}
+</script>
+<script id="vshader" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+	attribute vec3 aVertexColor;
+	
+    uniform mat4 model_mat;
+    uniform mat4 view_mat;
+    uniform mat4 projection_mat;
+	
+	varying vec4 varColor;
+	
+	void main(void) {
+        gl_Position = projection_mat * model_mat * view_mat * vec4(aVertexPosition, 1.0);
+		gl_PointSize = 3.0;
+		varColor = vec4(aVertexColor/255.0 ,1);
+    }
+</script>
+<style type="text/css">
+html, body, canvas {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+</head>
+
+
+<body onload="webGLStart();">
+    <canvas id="canvas"></canvas>
+</body>
+
+<script type="text/javascript" src="script.js"></script>	
+
+</html>
