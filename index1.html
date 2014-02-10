@@ -1,0 +1,120 @@
+<html>
+	<head>
+		<title>3Dsurvey viewer</title>
+		<style>
+			html, body, canvas {
+				margin: 0px;
+				padding: 0px;
+			}
+			canvas { 
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container"></div>
+		<script src="three.min.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+		<script src="js/controls/OrbitControls.js"></script>
+		<script src="js/controls/FirstPersonControls.js"></script>
+		<script src="js/loaders/PLYLoader.js"></script>
+		<script>
+			var container;
+			var windowWidth, windowHeight;
+			var mouseX = 0, mouseY = 0;
+			var scene, camera, controls;
+			var renderer;
+			var stats;
+			
+			var clock = new THREE.Clock();
+			
+			init();
+			animate();			
+		
+			function init() {
+				container = document.getElementById( 'container' );
+				
+				scene = new THREE.Scene();
+				scene.fog = new THREE.Fog( 0x151515, 1000, 1500 );
+				
+				renderer = new THREE.WebGLRenderer({ antialias: true });
+				renderer.setClearColor( scene.fog.color, 1 );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+				
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 5, 1500 );
+				//camera.up.set( 0, 0, 1 );
+				camera.updateProjectionMatrix();
+				//camera.lookAt(new THREE.Vector3( 1, 0, 0 ));
+				
+				controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+				controls.movementSpeed = 10;
+				//controls.rollSpeed = Math.PI / 2;
+				
+				controls.lookVertical = true;
+				controls.autoForward = false;
+				controls.dragToLook = false;
+
+				var loader = new THREE.PLYLoader();
+				loader.addEventListener( 'load', function ( event ) {
+					var geometry = event.content;
+				
+					var material = new THREE.ParticleSystemMaterial( { size: 0.01, vertexColors: true, sizeAttenuation: true } );
+					var particleSystem = new THREE.ParticleSystem( geometry, material );
+					particleSystem.rotation.set( - Math.PI / 2,0,  0 );
+					
+					console.log(particleSystem);
+					console.log(camera);
+					
+					camera.position.set( particleSystem.position.x, particleSystem.position.y, 50);
+					
+					scene.add( particleSystem );
+				});
+				loader.load( 'PointCloud_2014_01_10-16_26_50.ply' );	
+				
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+				
+				window.addEventListener('resize', onWindowResize);
+			}
+			
+			function render() {
+				updateSize();
+				
+				renderer.render(scene, camera);
+				
+				controls.update(clock.getDelta());
+			}
+			
+			function updateSize() {
+
+				if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight ) {
+
+					windowWidth  = window.innerWidth;
+					windowHeight = window.innerHeight;
+
+					renderer.setSize ( windowWidth, windowHeight );
+				}
+			}
+			
+			function animate() {
+				render();
+				stats.update();
+
+				requestAnimationFrame( animate );
+			}
+			
+			function onWindowResize() {
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+			}
+		</script>
+	</body>
+</html>
